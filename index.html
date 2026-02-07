@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>黑神话悟空存档版本切换工具</title>
+    <!-- 使用您提供的Vue.js链接 -->
+    <script src="https://bylizn.oss-cn-hangzhou.aliyuncs.com/vue.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        header {
+            background: linear-gradient(to right, #2575fc, #6a11cb);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .upload-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #2575fc;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .upload-area {
+            border: 3px dashed #6a11cb;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            transition: all 0.3s;
+            background-color: #f8f9ff;
+            cursor: pointer;
+            margin-bottom: 25px;
+        }
+
+        .upload-area:hover,
+        .upload-area.dragover {
+            background-color: #eef2ff;
+            border-color: #2575fc;
+        }
+
+        .upload-icon {
+            font-size: 60px;
+            color: #6a11cb;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-info {
+            background-color: #f1f5ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .info-row {
+            display: flex;
+            margin-bottom: 8px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            width: 120px;
+            color: #555;
+        }
+
+        .version-info {
+            background-color: #f1f5ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .version-status {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .version-icon {
+            font-size: 40px;
+            margin-right: 15px;
+        }
+
+        .version-details h3 {
+            font-size: 1.4rem;
+            margin-bottom: 5px;
+            color: #2575fc;
+        }
+
+        .version-signature {
+            font-family: 'Courier New', monospace;
+            background-color: #1a2332;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        .version-control {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #f8f9ff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .version-select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: white;
+        }
+
+        .version-select:focus {
+            border-color: #6a11cb;
+            outline: none;
+        }
+
+        .download-btn {
+            width: 100%;
+            padding: 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+
+        .download-btn:hover {
+            background-color: #218838;
+        }
+
+        .download-btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+            flex-grow: 1;
+        }
+
+        .upload-btn {
+            background-color: #6a11cb;
+            color: white;
+        }
+
+        .upload-btn:hover {
+            background-color: #5a0cb3;
+        }
+
+        .reset-btn {
+            background-color: #ff6b6b;
+            color: white;
+        }
+
+        .reset-btn:hover {
+            background-color: #ff5252;
+        }
+
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .progress-container.show {
+            display: block;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #6a11cb;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .signature-info {
+            margin-top: 25px;
+            background-color: #f8f9ff;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .signature-info h4 {
+            color: #2575fc;
+            margin-bottom: 10px;
+        }
+
+        .signature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .signature-item {
+            background-color: white;
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 4px solid #6a11cb;
+        }
+
+        .signature-item.current {
+            background-color: #e7f5ff;
+            border-left-color: #2575fc;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: white;
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                max-width: 95%;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .signature-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app" class="container">
+        <header>
+            <h1>黑神话悟空存档版本切换工具</h1>
+            <p class="subtitle">识别存档版本特征值，可随意切换版本。</p>
+        </header>
+
+        <div class="main-content">
+            <div class="upload-section">
+                <h2 class="section-title">文件上传</h2>
+
+                <div class="upload-area" :class="{ 'dragover': isDragOver }" @click="triggerFileInput"
+                    @dragover.prevent="handleDragOver" @dragleave="handleDragLeave" @drop.prevent="handleDrop">
+                    <div class="upload-icon">📁</div>
+                    <p class="upload-text">点击或拖放文件到此处</p>
+                    <p class="upload-hint">支持任何类型的文件（最大10MB）</p>
+                    <input type="file" id="fileInput" class="file-input" @change="handleFileSelect" ref="fileInput">
+                </div>
+
+                <div class="file-info" v-if="fileInfo.name">
+                    <div class="info-row">
+                        <div class="info-label">文件名:</div>
+                        <div>{{ fileInfo.name }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">文件类型:</div>
+                        <div>{{ fileInfo.type || '未知' }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">文件大小:</div>
+                        <div>{{ formatFileSize(fileInfo.size) }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">最后修改:</div>
+                        <div>{{ formatDate(fileInfo.lastModified) }}</div>
+                    </div>
+                </div>
+                <div class="file-info" v-else>
+                    <p style="text-align: center; color: #666;">文件信息将在此显示</p>
+                </div>
+
+                <div class="progress-container" :class="{ 'show': isReading }">
+                    <div>读取中: <span>{{ progress }}%</span></div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" :style="{ width: progress + '%' }"></div>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button class="upload-btn" @click="triggerFileInput">选择文件</button>
+                    <button class="reset-btn" @click="resetAll">重置</button>
+                </div>
+            </div>
+
+            <div class="version-info" v-if="currentVersion">
+                <div class="version-status">
+                    <div class="version-icon">🔍</div>
+                    <div class="version-details">
+                        <h3>检测到文件版本: {{ currentVersion.name }}</h3>
+                        <p>特征值位置: {{ formatHex(currentVersion.position) }}</p>
+                        <div class="version-signature">
+                            {{ currentVersion.signatureHex }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="signature-info">
+                    <h4>版本特征值对应表:</h4>
+                    <div class="signature-list">
+                        <div v-for="version in versions" :key="version.id" class="signature-item"
+                            :class="{ 'current': currentVersion.id === version.id }">
+                            <div><strong>{{ version.name }}</strong></div>
+                            <div style="font-family: 'Courier New', monospace; font-size: 0.9rem;">
+                                {{ version.signature }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="version-control" v-if="currentVersion">
+                <h2 class="section-title">版本切换与下载</h2>
+
+                <div class="control-group">
+                    <label class="control-label">选择目标版本:</label>
+                    <select class="version-select" v-model="selectedVersionId">
+                        <option v-for="version in versions" :key="version.id" :value="version.id">
+                            {{ version.name }} (特征值: {{ version.signature }})
+                        </option>
+                    </select>
+                </div>
+
+                <button class="download-btn" @click="downloadModifiedFile"
+                    :disabled="!canDownload || selectedVersionId === currentVersion.id">
+                    {{ downloadButtonText }}
+                </button>
+
+                <div v-if="selectedVersionId === currentVersion.id"
+                    style="color: #6c757d; margin-top: 10px; text-align: center;">
+                    当前已选择与文件相同的版本，无需修改
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>黑神话悟空存档版本切换工具 | 使用Vue.js和File API实现</p>
+    </footer>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                fileInfo: {},
+                isDragOver: false,
+                isReading: false,
+                progress: 0,
+                byteContent: null,
+                currentVersion: null,
+                selectedVersionId: null,
+                versions: [
+                    {
+                        id: 'v16',
+                        name: '16版',
+                        signature: '58 D5 93 01',
+                        signatureBytes: [0x58, 0xD5, 0x93, 0x01],
+                        signatureHex: '58 D5 93 01'
+                    },
+                    {
+                        id: 'v20',
+                        name: '20版',
+                        signature: '58 87 AC 01',
+                        signatureBytes: [0x58, 0x87, 0xAC, 0x01],
+                        signatureHex: '58 87 AC 01'
+                    },
+                    {
+                        id: 'v21',
+                        name: '21版',
+                        signature: '58 97 BA 01',
+                        signatureBytes: [0x58, 0x97, 0xBA, 0x01],
+                        signatureHex: '58 97 BA 01'
+                    }
+
+                ]
+            },
+            computed: {
+                canDownload() {
+                    return this.byteContent !== null && this.selectedVersionId !== null;
+                },
+
+                downloadButtonText() {
+                    if (!this.currentVersion) return '请先上传文件';
+                    if (this.selectedVersionId === this.currentVersion.id) return '无需修改，已为所选版本';
+
+                    const targetVersion = this.versions.find(v => v.id === this.selectedVersionId);
+                    return `下载 ${targetVersion.name} 版本文件`;
+                }
+            },
+            watch: {
+                selectedVersionId(newVal) {
+                    if (newVal) {
+                        // 更新搜索框显示当前选中的特征值
+                        const version = this.versions.find(v => v.id === newVal);
+                        if (version) {
+                            // 可以在这里添加其他逻辑
+                        }
+                    }
+                }
+            },
+            methods: {
+                triggerFileInput() {
+                    this.$refs.fileInput.click();
+                },
+
+                handleFileSelect(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        this.processFile(file);
+                    }
+                },
+
+                handleDragOver() {
+                    this.isDragOver = true;
+                },
+
+                handleDragLeave() {
+                    this.isDragOver = false;
+                },
+
+                handleDrop(event) {
+                    this.isDragOver = false;
+                    const file = event.dataTransfer.files[0];
+                    if (file) {
+                        this.processFile(file);
+                    }
+                },
+
+                async processFile(file) {
+                    // 检查文件大小（限制为10MB）
+                    const maxSize = 10 * 1024 * 1024; // 10MB
+                    if (file.size > maxSize) {
+                        alert('文件太大，请选择小于10MB的文件');
+                        return;
+                    }
+
+                    // 更新文件信息
+                    this.fileInfo = {
+                        name: file.name,
+                        type: file.type,
+                        size: file.size,
+                        lastModified: file.lastModified
+                    };
+
+                    // 开始读取文件
+                    this.isReading = true;
+                    this.progress = 0;
+
+                    try {
+                        // 使用FileReader读取文件为ArrayBuffer
+                        const arrayBuffer = await this.readFileAsArrayBuffer(file);
+                        this.byteContent = arrayBuffer;
+                        this.progress = 100;
+
+                        // 检测文件版本
+                        this.detectFileVersion();
+
+                        // 设置默认选择为当前版本
+                        //if (this.currentVersion) {
+                        //    this.selectedVersionId = this.currentVersion.id;
+                        //}
+
+                        // 始终设置为16版（v16）
+                        this.selectedVersionId = 'v16';
+
+                        // 模拟读取进度
+                        setTimeout(() => {
+                            this.isReading = false;
+                        }, 500);
+
+                    } catch (error) {
+                        console.error('读取文件时出错:', error);
+                        alert('读取文件时出错，请重试');
+                        this.isReading = false;
+                    }
+                },
+
+                readFileAsArrayBuffer(file) {
+                    return new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+
+                        reader.onloadstart = () => {
+                            this.progress = 10;
+                        };
+
+                        reader.onprogress = (event) => {
+                            if (event.lengthComputable) {
+                                this.progress = Math.round((event.loaded / event.total) * 100);
+                            }
+                        };
+
+                        reader.onload = (event) => {
+                            resolve(event.target.result);
+                        };
+
+                        reader.onerror = () => {
+                            reject(new Error('文件读取失败'));
+                        };
+
+                        reader.readAsArrayBuffer(file);
+                    });
+                },
+
+                detectFileVersion() {
+                    if (!this.byteContent) {
+                        this.currentVersion = null;
+                        return;
+                    }
+
+                    const bytes = new Uint8Array(this.byteContent);
+
+                    // 搜索所有版本特征值
+                    for (const version of this.versions) {
+                        const signature = version.signatureBytes;
+
+                        // 在文件中搜索特征值
+                        for (let i = 0; i <= bytes.length - signature.length; i++) {
+                            let match = true;
+
+                            for (let j = 0; j < signature.length; j++) {
+                                if (bytes[i + j] !== signature[j]) {
+                                    match = false;
+                                    break;
+                                }
+                            }
+
+                            if (match) {
+                                // 找到匹配的版本
+                                this.currentVersion = {
+                                    ...version,
+                                    position: i
+                                };
+                                return;
+                            }
+                        }
+                    }
+
+                    // 未找到匹配的版本
+                    this.currentVersion = {
+                        id: 'unknown',
+                        name: '未知版本',
+                        signature: '未识别',
+                        signatureHex: '未找到匹配的特征值',
+                        position: -1
+                    };
+                },
+
+                downloadModifiedFile() {
+                    if (!this.byteContent || !this.selectedVersionId) {
+                        alert('请先上传文件并选择目标版本');
+                        return;
+                    }
+
+                    if (this.selectedVersionId === this.currentVersion.id) {
+                        alert('文件已经是所选版本，无需修改');
+                        return;
+                    }
+
+                    // 获取目标版本信息
+                    const targetVersion = this.versions.find(v => v.id === this.selectedVersionId);
+                    if (!targetVersion) {
+                        alert('无效的版本选择');
+                        return;
+                    }
+
+                    // 创建文件的副本
+                    const bytes = new Uint8Array(this.byteContent);
+
+                    // 如果找到了当前版本的特征值位置，则替换为目标版本的特征值
+                    if (this.currentVersion.position !== -1 && this.currentVersion.position !== undefined) {
+                        const position = this.currentVersion.position;
+                        const targetSignature = targetVersion.signatureBytes;
+
+                        // 确保有足够的空间替换特征值
+                        if (position + targetSignature.length <= bytes.length) {
+                            for (let i = 0; i < targetSignature.length; i++) {
+                                bytes[position + i] = targetSignature[i];
+                            }
+
+                            console.log(`已将位置 ${this.formatHex(position)} 的特征值从 ${this.currentVersion.signature} 修改为 ${targetVersion.signature}`);
+                        } else {
+                            alert('文件太小，无法替换特征值');
+                            return;
+                        }
+                    } else {
+                        alert('未找到原始特征值位置，无法修改版本');
+                        return;
+                    }
+
+                    // 创建Blob并下载文件
+                    const blob = new Blob([bytes], { type: this.fileInfo.type || 'application/octet-stream' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+
+                    // 保持原文件名，但添加版本后缀
+                    const originalName = this.fileInfo.name;
+                    const nameWithoutExt = originalName.lastIndexOf('.') > 0 ?
+                        originalName.substring(0, originalName.lastIndexOf('.')) : originalName;
+                    const extension = originalName.lastIndexOf('.') > 0 ?
+                        originalName.substring(originalName.lastIndexOf('.')) : '';
+
+                    const newFileName = `${nameWithoutExt}_${targetVersion.name}${extension}`;
+
+                    a.href = url;
+                    a.download = newFileName;
+                    document.body.appendChild(a);
+                    a.click();
+
+                    // 清理
+                    setTimeout(() => {
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    }, 100);
+
+                    alert(`文件已修改为${targetVersion.name}版本并开始下载`);
+                },
+
+                formatHex(value) {
+                    if (value === -1) return '未知';
+                    return '0x' + value.toString(16).toUpperCase().padStart(8, '0');
+                },
+
+                resetAll() {
+                    this.fileInfo = {};
+                    this.byteContent = null;
+                    this.progress = 0;
+                    this.isReading = false;
+                    this.currentVersion = null;
+                    this.selectedVersionId = null;
+                    this.$refs.fileInput.value = '';
+                },
+
+                formatFileSize(bytes) {
+                    if (bytes === 0) return '0 Bytes';
+                    const k = 1024;
+                    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                    const i = Math.floor(Math.log(bytes) / Math.log(k));
+                    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+                },
+
+                formatDate(timestamp) {
+                    if (!timestamp) return '未知';
+                    const date = new Date(timestamp);
+                    return date.toLocaleString('zh-CN');
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
